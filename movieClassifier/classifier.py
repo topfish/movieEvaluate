@@ -1,3 +1,10 @@
+# 使用算法：逻辑二分法
+# 这种算法的时间较长，但是逻辑简单
+# 超参调优方式，pipeline+网格搜索
+# 数据集数量50000条电影评价
+# 训练时间较长，笔记本约需要25分钟
+
+
 import os
 import tarfile
 import requests
