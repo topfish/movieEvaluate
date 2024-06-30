@@ -7,6 +7,9 @@ from sklearn.linear_model import SGDClassifier
 import pyprind
 import numpy as np
 from joblib import dump
+import logging
+
+logger = logging
 
 
 # 按行读取‘movie_data.csv’的生成器
@@ -34,6 +37,12 @@ def get_minibatch(doc_stream, size):
 
 
 def main():
+    # 数据准备
+    import classifier
+    classifier.data_check()
+    classifier.data_to_csv()
+
+    import classifier
     # 向量化
     vect = HashingVectorizer(decode_error='ignore',
                              n_features=2 ** 21,
@@ -50,6 +59,7 @@ def main():
     pbar = pyprind.ProgBar(45)
 
     classes = np.array([0, 1])
+    logger.info("开始模型训练 ！！！")
     # 分批训练（45批），每次用1000条数据，总计用45000条训练数据
     for _ in range(45):
         X_train, y_train = get_minibatch(doc_stream, size=1000)
@@ -70,6 +80,7 @@ def main():
 
     # 报错模型
     dump(clf, 'movie_SGDclassifier.model')
+    logger.info("模型保存成功")
 
 
 if __name__ == "__main__":
