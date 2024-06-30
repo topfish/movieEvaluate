@@ -162,8 +162,8 @@ cython_debug/
 
 .idea/
 
-./movieClassifier/aclImdb_v1.tar.gz
-./movieClassifier/aclImdb/
-./movieClassifier/movie_data.csv
-./movieClassifier/movie_classifier.model
-test.py
+aclImdb_v1.tar.gz
+aclImdb/
+movie_data.csv
+movie_classifier.model
+movie_SGDclassifier.model

@@ -14,6 +14,7 @@ import pandas as pd
 import pyprind
 import numpy as np
 import re
+import nltk
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -59,12 +60,16 @@ def data_check():
     if not os.path.isdir('aclImdb') and not os.path.isfile('aclImdb_v1.tar.gz'):
         logger.info("下载数据集")
         download_file(source, target)
+    else:
+        logger.info("get local data 'aclImdb_v1.tar.gz'")
 
     # 解压缩
     if not os.path.isdir('aclImdb'):
         logger.info("开始解压缩")
         with tarfile.open(target, 'r:gz') as tar:
             tar.extractall()
+    else:
+        logger.info("get data unziped")
 
 
 def data_to_csv():
@@ -100,12 +105,14 @@ def data_to_csv():
 
 # 通过正则匹配处理文本里的html和表情等字符
 def preprocessor(text):
+    stop = stopwords.words('english')
     text = re.sub('<[^>]*>', '', text)
     emoticons = re.findall('(?::|;|=)(?:-)?(?:\)|\(|D|P)',
                            text)
     text = (re.sub('[\W]+', ' ', text.lower()) +
             ' '.join(emoticons).replace('-', ''))
-    return text
+    res = [w for w in text.split() if w not in stop]
+    return res
 
 
 def text_split(text):
@@ -117,21 +124,7 @@ def text_porter(text):
     return [porter.stem(word) for word in text.split()]
 
 
-def main():
-    # 检查原始数据集是否存在
-    data_check()
-
-    # 原始数据处理，标记评价文本和标签，转存为dataForm
-    data_to_csv()
-
-    # 读取csv数据
-    df = pd.read_csv('movie_data.csv', encoding='utf-8')
-    # 处理html和表情等字符
-    df['review'] = df['review'].apply(preprocessor)
-    # 词干提取
-    # todo 下载停词表
-    # nltk.download('stopwords')
-    stop = stopwords.words('english')
+def model_fit(df, stop):
     # 训练集和测试集
     X_train = df.loc[:25000, 'review'].values
     y_train = df.loc[:25000, 'sentiment'].values
@@ -166,6 +159,7 @@ def main():
                                verbose=2,
                                n_jobs=-1)
     # 开始训练模型
+    logger.info("begin model fit ! ! !")
     gs_lr_tfidf.fit(X_train, y_train)
 
     print('Best parameter set: %s ' % gs_lr_tfidf.best_params_)
@@ -178,6 +172,38 @@ def main():
     # 保存模型
     logger.info("dump model to movie_classifier.model")
     dump(clf, 'movie_classifier.model')
+
+
+def load_model(df):
+    from joblib import load
+    model = load("movie_classifier.model")
+    df = df[:5]
+    x = df['review'].values
+    y = df['sentiment'].values
+    print("score: ", model.score(x, y))
+
+def main():
+    # 检查原始数据集是否存在
+    data_check()
+
+    # 原始数据处理，标记评价文本和标签，转存为dataForm
+    data_to_csv()
+
+    # 读取csv数据
+    df = pd.read_csv('movie_data.csv', encoding='utf-8')
+    # 处理html和表情等字符
+    df['review'] = df['review'].apply(preprocessor)
+    # 词干提取
+    # todo 下载停词表
+    logger.info("nltk download")
+    nltk.download('stopwords')
+    stop = stopwords.words('english')
+
+    # 模型训练
+    model_fit(df, stop)
+
+    # 测试加载model
+    # load_model(df)
 
 
 if __name__ == "__main__":
