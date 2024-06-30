@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>First app</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+
+{% from "_formhelpers.html" import render_field %}
+
+<div>输入你对电影的描述（目前只支持英文评价）</div>
+<form method=post action="/evaluate">
+
+  <dl>
+	  {{ render_field(form.getdes) }}
+  </dl>
+
+  <input type=submit value='开始分析' name='submit_btn'>
+
+</form>
+
+  </body>
+</html>
