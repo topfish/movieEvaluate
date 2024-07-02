@@ -9,7 +9,11 @@ import numpy as np
 from joblib import dump
 import logging
 
-logger = logging
+# 日志
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# logger = logging
 
 
 # 按行读取‘movie_data.csv’的生成器
